@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 bitfield = "0.19.1"
 bluer = { version = "0.17.4", features = ["full"] }
+chrono = "0.4.41"
 clap = { version = "4.5.41", features = ['derive'] }
 env_logger = "0.11.8"
 futures = "0.3.31"
