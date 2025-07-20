@@ -6,7 +6,7 @@ mod hr_data;
 use bluer::{AdapterEvent, Address, Device};
 use clap::{Arg, Command};
 use futures::{StreamExt, pin_mut};
-use hr_data::HRData2;
+use hr_data::HRData;
 use log::debug;
 use std::str::FromStr;
 
@@ -18,16 +18,9 @@ async fn hr_loop(device: Device) -> bluer::Result<()> {
 
     loop {
         match notify.next().await {
-            Some(value) => match HRData2::try_from(value) {
-                Ok(data) => match data {
-                    HRData2::Single(hrdata) => {
-                        println!("Single-byte precision HR data: {:?}", hrdata)
-                    }
-                    HRData2::Double(hrdata) => {
-                        println!("Double-byte precision HR data: {:?}", hrdata)
-                    }
-                },
-                Err(e) => println!("Could not parse HR data:\n {}", e),
+            Some(value) => match HRData::try_from(value) {
+                Ok(data) => println!("HR data: {data:?}"),
+                Err(e) => println!("Could not parse HR data:\n {e}"),
             },
             None => {
                 println!("Notification session was terminated");
@@ -55,14 +48,16 @@ async fn find_device(to_find: Address) -> bluer::Result<Device> {
                     return adapter.device(addr);
                 }
             }
-            _ => {}
+            _ => {
+                todo!("Handle things going wrong here")
+            }
         }
     }
 
-    return Err(bluer::Error {
+    Err(bluer::Error {
         kind: bluer::ErrorKind::NotAvailable,
         message: "Requested device not available".to_owned(),
-    });
+    })
 }
 
 #[tokio::main(flavor = "current_thread")]
