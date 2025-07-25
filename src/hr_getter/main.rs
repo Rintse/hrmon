@@ -1,6 +1,7 @@
 const HR_SERVICE_ID: u16 = 0x000b;
 const HR_ATTR_ID: u16 = 0x000c;
 
+#[path = "../hr_data.rs"]
 mod hr_data;
 
 use bluer::{AdapterEvent, Address, Device};

@@ -2,7 +2,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use bitfield::bitfield;
 use log::debug;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 bitfield! {
     struct HRDataFlags(u8);
@@ -14,7 +14,7 @@ bitfield! {
     pub rr_interval_present, _: 4;
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct HRData {
     pub timestamp: u128, // NOTE: this is processing time, not measurement time
     pub hr_measurement: u16,

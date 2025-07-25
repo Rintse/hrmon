@@ -12,6 +12,16 @@ env_logger = "0.11.8"
 futures = "0.3.31"
 itertools = "0.14.0"
 log = "0.4.27"
+metrics = "0.24.2"
+metrics-exporter-prometheus = { version = "0.17.2", features = ["http-listener"] }
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.141"
 tokio = { version = "1.46.1", features = ["rt-multi-thread", "macros"] }
+
+[[bin]]
+name = "hr_getter"
+path = "src/hr_getter/main.rs"
+
+[[bin]]
+name = "exporter"
+path = "src/exporter/main.rs"
