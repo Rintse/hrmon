@@ -23,8 +23,8 @@ async fn hr_loop(device: Device, format: PrintFormat) -> bluer::Result<()> {
 
     info!("Starting notification loop...");
     loop {
-        match notify.next().await {
-            Some(value) => match HRData::try_from(value) {
+        if let Some(value) = notify.next().await {
+            match HRData::try_from(value) {
                 Ok(data) => {
                     let s = match format {
                         PrintFormat::Print => format!("{data:?}"),
@@ -35,11 +35,10 @@ async fn hr_loop(device: Device, format: PrintFormat) -> bluer::Result<()> {
                     println!("{s}");
                 }
                 Err(e) => error!("Could not parse HR data:\n {e}"),
-            },
-            None => {
-                info!("Notification session was terminated");
-                break;
             }
+        } else {
+            info!("Notification session was terminated");
+            break;
         }
     }
 
@@ -91,11 +90,7 @@ async fn run() -> anyhow::Result<()> {
     let args = CliArgs::parse();
     debug!("Running with configuration: {args:?}");
 
-    let addr = match Address::from_str(&args.device) {
-        Ok(addr) => addr,
-        Err(e) => bail!("Faulty address given: {e}"),
-    };
-
+    let addr = Address::from_str(&args.device)?;
     let dur = Duration::from_secs(args.connect_timeout);
     let device = match timeout(dur, find_device(addr)).await {
         Ok(device) => device?,

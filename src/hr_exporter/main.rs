@@ -35,7 +35,7 @@ fn main() {
             }
 
             info!("Setting data: {data:?}");
-            gauge_hr_rate.set(data.hr_measurement as f64);
+            gauge_hr_rate.set(f64::from(data.hr_measurement));
             if let Some(rr) = data.rr_intervals.last() {
                 gauge_rr_interval.set(*rr);
             }

@@ -36,7 +36,7 @@ impl TryFrom<Vec<u8>> for HRData {
             u16::from_le_bytes([v[i - 2], v[i - 1]])
         } else {
             i += 1;
-            v[i - 1] as u16
+            u16::from(v[i - 1])
         };
 
         let contact = if flags.sensor_contact_present() {
@@ -57,8 +57,8 @@ impl TryFrom<Vec<u8>> for HRData {
             while i < v.len() {
                 i += 2;
                 rrs.push(
-                    u16::from_le_bytes([v[i - 2], v[i - 1]]) as f64 / 1024.0,
-                )
+                    f64::from(u16::from_le_bytes([v[i - 2], v[i - 1]])) / 1024.0,
+                );
             }
             rrs
         } else {
@@ -66,8 +66,8 @@ impl TryFrom<Vec<u8>> for HRData {
         };
 
         Ok(Self {
-            contact,
             hr_measurement,
+            contact,
             energy_expended,
             rr_intervals,
         })

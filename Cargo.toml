@@ -24,5 +24,5 @@ name = "hr_getter"
 path = "src/hr_getter/main.rs"
 
 [[bin]]
-name = "exporter"
-path = "src/exporter/main.rs"
+name = "hr_exporter"
+path = "src/hr_exporter/main.rs"
