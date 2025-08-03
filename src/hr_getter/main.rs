@@ -83,7 +83,7 @@ struct CliArgs {
     #[arg(value_enum, default_value_t = PrintFormat::Print, short = 'f')]
     format: PrintFormat,
     /// Amount of seconds before giving up on the BT connect process
-    #[arg(default_value_t = 10, short = 't')]
+    #[arg(default_value_t = 30, short = 't')]
     connect_timeout: u64,
 }
 
