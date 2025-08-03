@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+anyhow = "1.0.98"
 bitfield = "0.19.1"
 bluer = { version = "0.17.4", features = ["full"] }
 chrono = "0.4.41"

@@ -1,5 +1,3 @@
-use std::time::{SystemTime, UNIX_EPOCH};
-
 use bitfield::bitfield;
 use log::debug;
 use serde::{Deserialize, Serialize};
@@ -16,7 +14,6 @@ bitfield! {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct HRData {
-    pub timestamp: u128, // NOTE: this is processing time, not measurement time
     pub hr_measurement: u16,
     pub contact: Option<bool>,
     pub energy_expended: Option<u16>,
@@ -30,10 +27,6 @@ impl TryFrom<Vec<u8>> for HRData {
     type Error = ParseError;
 
     fn try_from(v: Vec<u8>) -> Result<Self, Self::Error> {
-        let timestamp = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("we should be after the epoch")
-            .as_millis();
         let flags = HRDataFlags(v[0]);
         debug!("HR data flags: {flags:?}");
         let mut i = 1;
@@ -73,7 +66,6 @@ impl TryFrom<Vec<u8>> for HRData {
         };
 
         Ok(Self {
-            timestamp,
             contact,
             hr_measurement,
             energy_expended,

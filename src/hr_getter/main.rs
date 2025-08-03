@@ -4,14 +4,18 @@ const HR_ATTR_ID: u16 = 0x000c;
 #[path = "../hr_data.rs"]
 mod hr_data;
 
+use anyhow::bail;
 use bluer::{AdapterEvent, Address, Device};
 use clap::{Parser, ValueEnum};
 use futures::{StreamExt, pin_mut};
 use hr_data::HRData;
 use log::{debug, error, info};
-use std::str::FromStr;
+use std::{str::FromStr, time::Duration};
+use tokio::time::timeout;
 
 async fn hr_loop(device: Device, format: PrintFormat) -> bluer::Result<()> {
+    // seems to be the only way to wait for service resolve
+    let _ = device.services().await?; 
     let service = device.service(HR_SERVICE_ID).await?;
     let characteristic = service.characteristic(HR_ATTR_ID).await?;
     let notify = characteristic.notify().await?;
@@ -24,7 +28,9 @@ async fn hr_loop(device: Device, format: PrintFormat) -> bluer::Result<()> {
                 Ok(data) => {
                     let s = match format {
                         PrintFormat::Print => format!("{data:?}"),
-                        PrintFormat::Json => serde_json::to_string(&data).unwrap(),
+                        PrintFormat::Json => {
+                            serde_json::to_string(&data).unwrap()
+                        }
                     };
                     println!("{s}");
                 }
@@ -73,19 +79,42 @@ enum PrintFormat {
 #[command(version, about, long_about = None)]
 struct CliArgs {
     device: String,
+    /// The output format for the gathered heart rate data (stdout)
     #[arg(value_enum, default_value_t = PrintFormat::Print, short = 'f')]
     format: PrintFormat,
+    /// Amount of seconds before giving up on the BT connect process
+    #[arg(default_value_t = 10, short = 't')]
+    connect_timeout: u64,
 }
 
-#[tokio::main(flavor = "current_thread")]
-async fn main() -> bluer::Result<()> {
-    env_logger::init();
+async fn run() -> anyhow::Result<()> {
     let args = CliArgs::parse();
     debug!("Running with configuration: {args:?}");
 
-    let addr_to_find = Address::from_str(&args.device).unwrap();
-    let device = find_device(addr_to_find).await?;
+    let addr = match Address::from_str(&args.device) {
+        Ok(addr) => addr,
+        Err(e) => bail!("Faulty address given: {e}"),
+    };
+
+    let dur = Duration::from_secs(args.connect_timeout);
+    let device = match timeout(dur, find_device(addr)).await {
+        Ok(device) => device?,
+        Err(_) => {
+            bail!("Could not connect to {} within {:?}", addr, dur);
+        }
+    };
+
     device.connect().await?;
-    // TODO: this happens to fast right now, need to await something probably?
-    hr_loop(device, args.format).await
+    hr_loop(device, args.format).await?;
+    Ok(())
+}
+
+#[tokio::main(flavor = "current_thread")]
+async fn main() {
+    env_logger::init();
+
+     if let Err(e) = run().await {
+        eprintln!("{e}");
+        std::process::exit(1)
+    }
 }

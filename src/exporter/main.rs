@@ -8,8 +8,6 @@ use metrics::{describe_gauge, gauge};
 use metrics_exporter_prometheus::PrometheusBuilder;
 use std::{io::BufRead, net::SocketAddr};
 
-
-
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct CliArgs {
@@ -25,7 +23,7 @@ fn main() {
 
     describe_gauge!("hr_rate", "Latest heart rate measurmenent (BPM)");
     let gauge_hr_rate = gauge!("hr_rate");
-    describe_gauge!("hr_rate", "Latest RR-interval (ms)");
+    describe_gauge!("rr_interval", "Latest RR-interval (ms)");
     let gauge_rr_interval = gauge!("rr_interval");
 
     for line in std::io::stdin().lock().lines() {
